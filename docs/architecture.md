@@ -1,22 +1,22 @@
-# Arquitetura
+# Architecture
 
-## Contexto e linguagem
+## Domain model
 
-Bounded context **Entrega de Webhooks**. `WebhookJob` é a entidade identificada por UUID; destino HTTPS, payload, tentativas, próxima execução e status formam seu estado. As invariantes impedem destino sem HTTPS e payload vazio. Termos ubíquos: enfileirar, entregar, tentativa, pendente, entregue e esgotado.
+The **Webhook Delivery** bounded context models `WebhookJob` as a UUID-identified entity. HTTPS destination, payload, attempts, next execution, and status compose its state. Invariants reject non-HTTPS destinations and empty payloads. Ubiquitous terms include queue, deliver, attempt, pending, delivered, and exhausted.
 
-## Fronteiras
+## Layers
 
-- **Domínio:** entidade, estados e transições, sem Quarkus.
-- **Aplicação:** casos de uso explícitos `QueueWebhook` e `DispatchDueWebhooks`.
-- **Infraestrutura:** REST, CDI, repositório em memória e JDK HTTP Client.
+- **Domain:** entity, states, and transitions without Quarkus.
+- **Application:** explicit `QueueWebhook` and `DispatchDueWebhooks` use cases.
+- **Infrastructure:** REST, CDI, in-memory repository, and JDK HTTP Client.
 
-Fluxo: buscar pendentes vencidos → entregar → marcar sucesso, agendar nova tentativa ou esgotar.
+Flow: find due jobs -> deliver -> mark successful, schedule another attempt, or exhaust.
 
-## Padrões e alternativas
+## Patterns and alternatives
 
-- **Strategy:** `RetryStrategy` separa backoff da orquestração. Números fixos no caso de uso foram descartados.
-- **Repository:** permite substituir memória por outbox transacional.
-- **Adapter:** HTTP de entrada e saída ficam nas bordas.
-- State formal foi descartado: o enum com transições na entidade mantém as três fases legíveis sem uma classe por estado. Visitor não se aplica porque operações sobre uma hierarquia de jobs não existem.
+- **Strategy:** `RetryStrategy` separates backoff from orchestration. Fixed numbers inside the use case were rejected.
+- **Repository:** allows memory to be replaced by a transactional outbox.
+- **Adapter:** inbound and outbound HTTP stay at the boundaries.
+- A formal State pattern was rejected because an enum with entity-owned transitions keeps three phases readable. Visitor does not apply because there is no job hierarchy requiring independent operations.
 
-O repositório em memória facilita execução local, mas não oferece durabilidade ou coordenação. Produção requer outbox, lease, timeout, circuit breaker, jitter e defesa SSRF completa.
+The in-memory repository simplifies local execution but offers no durability or coordination. Production needs an outbox, leases, timeouts, circuit breaking, jitter, and complete SSRF defenses.

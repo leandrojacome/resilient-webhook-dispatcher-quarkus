@@ -1,13 +1,13 @@
-# ADR-001: retentativa exponencial com limite
+# ADR-001: Bounded exponential retry
 
 ## Status
 
-Aceito.
+Accepted for the portfolio scope.
 
-## Decisão
+## Decision
 
-Aplicar backoff exponencial e encerrar após cinco tentativas.
+Apply exponential backoff and stop after five attempts.
 
-## Consequências
+## Consequences
 
-Reduz pressão sobre destinos indisponíveis e impede retries infinitos. Jitter e circuit breaker foram deixados como evolução para evitar sincronização de clientes e falhas em cascata.
+This reduces pressure on unavailable destinations and prevents infinite retries. Jitter and circuit breaking remain future evolutions to avoid synchronized clients and cascading failures.

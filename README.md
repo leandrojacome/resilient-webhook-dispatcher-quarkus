@@ -1,30 +1,31 @@
-# Resilient Webhook Dispatcher — Quarkus
+# Resilient Webhook Dispatcher with Quarkus
 
-API para enfileirar e entregar webhooks com retentativas exponenciais e limite de tentativas. O núcleo é Java puro; Quarkus compõe dependências e expõe a borda HTTP.
+An API that queues and delivers webhooks with exponential retries and a bounded attempt count. The core is plain Java; Quarkus composes dependencies and exposes the HTTP boundary.
 
-## Arquitetura e padrões
+## Architecture and patterns
 
-- **Strategy (GoF):** `RetryStrategy` encapsula a política de retentativa; `ExponentialBackoffStrategy` é a implementação atual.
-- **Repository:** `WebhookRepository` separa os casos de uso da persistência.
-- **Ports and Adapters:** cliente HTTP, repositório em memória e recurso REST ficam fora do núcleo.
-- **SOLID:** casos de uso possuem responsabilidade única e dependem de abstrações pequenas.
-- **DDD proporcional:** bounded context de Entrega de Webhooks, entidade `WebhookJob`, invariantes e transições expressas na linguagem ubíqua.
+- **Strategy:** `RetryStrategy` encapsulates retry policy; `ExponentialBackoffStrategy` is the current implementation.
+- **Repository:** job persistence stays behind an application port.
+- **Ports and Adapters:** HTTP client, in-memory repository, and REST resource stay outside the core.
+- **SOLID:** use cases have a single responsibility and depend on small abstractions.
+- **Pragmatic DDD:** the Webhook Delivery bounded context uses `WebhookJob` as its entity and expresses invariants and transitions in ubiquitous language.
+
+## Run
 
 ```bash
-mvn verify
-mvn quarkus:dev
+mvn test
 ```
 
-Veja [Arquitetura](docs/architecture.md) e [ADR-001](docs/adr/001-retry-policy.md).
+See [Architecture](docs/architecture.md) and [ADR-001](docs/adr/001-retry-policy.md).
 
 ## Trade-offs
 
-O adaptador em memória torna a demonstração autocontida, mas não é durável. Produção exigiria outbox transacional, leases para concorrência entre réplicas, timeout configurável, circuit breaker, observabilidade e política contra SSRF mais completa que a exigência de HTTPS.
+The in-memory adapter keeps the demonstration self-contained but is not durable. Production requires a transactional outbox, leases across replicas, configurable timeouts, circuit breaking, observability, and stronger SSRF protection than HTTPS-only destinations.
 
-Uma hierarquia State foi descartada porque três estados e transições simples ficam mais claros na entidade; Visitor foi descartado por não haver estrutura heterogênea com múltiplas operações.
+A State hierarchy was rejected because three states and simple transitions are clearer inside the entity. Visitor was rejected because no heterogeneous job structure requires multiple operations.
 
-O CI executa testes e auditoria de dependências com Trivy, bloqueando vulnerabilidades corrigíveis HIGH/CRITICAL.
+CI runs tests and a Trivy dependency scan that blocks fixable HIGH or CRITICAL vulnerabilities.
 
-## Licença
+## License
 
-MIT.
+MIT
