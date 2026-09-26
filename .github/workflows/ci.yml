@@ -1,0 +1,22 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: "21", cache: maven}
+      - run: mvn --batch-mode verify
+      - name: Audit dependencies with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          vuln-type: library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
